@@ -1,0 +1,146 @@
+# Cấu hình file phiên bản 2.8 mới nhất
+example:
+  # --- THÔNG BÁO HIỂN THỊ ---
+  send-title: "&eYour tool not matching! %progress%" # Tiêu đề khi dùng sai dụng cụ (hiện kèm % tiến độ)
+  send-subtitle: "<red>or Tools are too low</red>"  # Dòng phụ: dụng cụ không đủ cấp hoặc không khớp
+  click_cooldown: 0.5                               # Thời gian giãn cách giữa mỗi lần click (giây)
+  action_bar: false                                 # Có hiện thanh tiến trình ở Action Bar hay không
+  time-refund: 5                                    # Thời gian (giây) để block hồi lại máu nếu người chơi ngừng đào
+  respawn: 4                                        # Thời gian (giây) để block xuất hiện lại sau khi vỡ
+  break-block: true                                # Có cho phép phá vỡ block thật của Minecraft không (thường để false)
+  health-block: 5                                   # Tổng lượng máu (số lần click hiệu quả) của block
+  death_delay: 1                                    # Độ trễ trước khi block biến mất hoàn toàn sau khi hết máu
+  struct-ids:
+    - "1"
+  # --- VÙNG TƯƠNG TÁC (HITBOX) ---
+  hitbox:
+    width: 1  # Độ rộng vùng tương tác
+    length: 1 # Độ dài vùng tương tác
+    height: 1 # Chiều cao vùng tương tác
+
+  # --- CÀI ĐẶT BLOCK HIỂN THỊ ---
+  block-settings:
+    enabled: false             # Nếu bật, dùng block này làm vật thể va chạm/hiển thị
+    material: "DRAGON_EGG"    # Loại block sử dụng (Trứng rồng)
+
+  # --- TÍCH HỢP ITEMSADDER ---
+  block-itemsadder:
+    enabled: true            # Nếu bật, sẽ dùng Model 3D từ ItemsAdder (ArmorStand)
+    model-id: 10043           # ID của Model trong ItemsAdder
+    material: paper           # Loại item gốc chứa model
+
+  # --- CẤU HÌNH HOLOGRAM (CHỮ BAY) ---
+  hologram:
+    enable: true
+    customHolo:               # Hologram mặc định khi block chưa bị đào
+      '1':
+        value: <color:#35FF0A>Tutorial Mining</color>
+        height: 0.0
+      '2':
+        value: <gradient:#FFFFFF:#FFFFFF>No requirement</gradient>
+        height: 0.2
+      '3':
+        value: <color:#AAAAAA>Left-Click to mine</color>
+        height: 0.2
+      '4':
+        value: item           # Hiển thị icon vật phẩm bay
+        id: WOODEN_PICKAXE    # Loại dụng cụ hiển thị
+        custom_model_data: 0
+        height: 1.5
+    progressHolo:             # Hologram hiện ra khi đang trong quá trình đào
+      "1":
+        value: <color:#AAAAAA>Left-Click to receive &7CobbleStone</color>
+        height: 0.4
+      "2":
+        value: <color:#AAAAAA>Right-Click to receive &7Cobble Fragment</color>
+        height: 0.2
+      "3":
+        value: "&7[&f%progress_bar%&7]" # Thanh tiến trình đào
+        height: 0.4
+    deathHolo:                # Hologram hiện ra khi block đang chờ hồi phục
+      "1":
+        value: <color:#FFF800>Respawning</color>
+        height: 0.4
+      "2":
+        value: "<gradient:#FFA500:#F92986>Respawning in: %respawnTime%s</gradient>"
+        height: 0.4
+    height: 1.5               # Độ cao tổng thể của Hologram
+    clickHeight: 1.5          # Độ cao khi click
+    respawnHeigth: 1.5        # Độ cao khi đang hồi phục
+    shadowed: true            # Có đổ bóng cho chữ không
+    background: false         # Có nền cho chữ không
+
+  # --- ĐIỀU KIỆN ĐỂ TƯƠNG TÁC ---
+  conditions:
+    condition1:
+      first: "%player_level%"
+      second: "10"
+      operator: ">="          # Yêu cầu level người chơi từ 10 trở lên
+      send-title: "&cLevel quá thấp"
+      send-subtitle: "&fCần level 10 để đào quặng này"
+    condition2:
+      first: "%vault_eco_balance%"
+      second: "500"
+      operator: ">"           # Yêu cầu số dư tài khoản phải trên 500$
+      send-title: "&eKhông đủ tiền"
+      send-subtitle: "&fCần nhiều hơn 500$ trong túi"
+
+  # --- ÂM THANH ---
+  sounds:
+    onClick: block.stone.break # Âm thanh khi click vào block
+    onDeath: block.stone.break # Âm thanh khi block bị đào vỡ
+
+  # --- TÙY CHỌN RƠI ĐỒ ---
+  drop-options:
+    Lootsplosion: true         # Hiệu ứng nổ nhẹ và hất văng item xung quanh (Rất đẹp)
+    ItemGlow:
+      enable: false            # Hiệu ứng phát sáng viền cho item (Hiện đang tắt)
+
+  # --- DỤNG CỤ HỢP LỆ (ALLOWED TOOLS) ---
+  allowed_tools:
+    "1": # Dụng cụ loại 1: Kiếm Dungeon (MMOItems)
+      material: SWORD:DUNGEON2
+      left_click:
+        decreaseDurability: 50 # Trừ 50 độ bền của dụng cụ mỗi lần hoàn thành
+        clickNeeded: 1         # Sát thương gây ra mỗi lần click
+      allowedDrops:
+        - cobblestone_drop     # Chỉ được phép rơi đá cuội
+
+    "2": # Dụng cụ loại 2: Cúp kim cương Vanilla
+      material: DIAMOND_PICKAXE
+      left_click:
+        decreaseDurability: 2  # Trừ 2 độ bền
+        clickNeeded: 1         # Sát thương mỗi lần click
+      allowedDrops:
+        - cobblestone_drop
+        - ruby_gem_drop        # Được phép rơi thêm Ruby
+        - lucky_money          # Có cơ hội nhận tiền thưởng
+
+  # --- CẤU HÌNH CHI TIẾT PHẦN THƯỞNG (DROPS) ---
+  drops:
+    cobblestone_drop:
+      conditions:
+        - "%player_level% < 10"
+      item:
+        material: SWORD:DUNGEON3     # Vật phẩm từ MMOItems
+        total: [1-3]                 # Số lượng rơi ngẫu nhiên từ 1 đến 3 viên
+        chances: 1.0                 # Tỉ lệ rơi 100%
+        drop_type: center_ground     # Rơi tại tâm block (có hiệu ứng văng)
+      target: left_click             # Chỉ rơi khi click chuột trái
+
+    ruby_gem_drop:
+      item:
+        material: _iainternal:icon_arrow_chest # Vật phẩm từ ItemsAdder
+        total: [1]
+        chances: 0.6                 # Tỉ lệ rơi 60%
+        drop_type: center_ground     # Rơi tại tâm block
+      target: left_click
+
+    lucky_money:
+      conditions:
+        - "%player_level% > 10"
+        # - "%luckperms_primary_group_name% == vip" #thêm nhiều điều kiện khác
+      command:
+        value: "eco give %player% 500" # Lệnh console thưởng tiền
+        amount: [1]
+        chances: 0.1                 # Tỉ lệ trúng thưởng 10%

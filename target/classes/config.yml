@@ -1,0 +1,5 @@
+progressbar:
+  progressing: "<green>|"   # Ký hiệu phần đã đào (Dùng MiniMessage hoặc mã màu &)
+  noprogress: "<gray>|"    # Ký hiệu phần chưa đào
+  barlength: 10            # Độ dài thanh bar
+language: en

@@ -1,0 +1,43 @@
+general:
+  no-console: "&cChỉ người chơi mới có thể dùng lệnh này!"
+  usage: "&cCách dùng: %syntax%"
+  invalid-action: "&cHành động không hợp lệ! (edit, save, remove)"
+  error-save: "&cLỗi hệ thống khi lưu tệp structure!"
+
+commands:
+  struct:
+    desc: "Quản lý cấu trúc và lưu tệp .yml"
+  place:
+    desc: "Đặt một MMOBlock với cấu hình tùy chỉnh"
+  create:
+    desc: "Tạo file cấu hình block mới từ mẫu chuẩn"
+  reload:
+    desc: "Tải lại toàn bộ cấu hình và làm mới Hologram/Hitbox"
+  list:
+    desc: "Mở danh sách quản lý tất cả MMOBlock đã đặt."
+struct:
+  edit-on: "&e[MMOBlock] &aĐã BẬT chế độ Edit. Hãy Click vào các block muốn lưu."
+  edit-off: "&e[MMOBlock] &cĐã TẮT chế độ Edit và hoàn tác toàn bộ block."
+  missing-id: "&cThiếu ID cấu trúc!"
+  no-blocks: "&cBạn chưa chọn block nào để lưu!"
+  save-success: "&e[MMOBlock] &aĐã lưu structure &f%id% &avới &f%count% &ablocks!"
+  not-found: "&cKhông tìm thấy structure với ID: &f%id%"
+  remove-success: "&e[MMOBlock] &aĐã xóa thành công structure &f%id%&a!"
+  remove-failed: "&cKhông thể xóa file structure &f%id%&c!"
+place:
+  not-found: "&c[!] Không tìm thấy cấu hình block: &f%id%"
+  success: "&e[MMOBlock] &aĐã đặt block '&f%id%&a' thành công!"
+create:
+  already-exists: "&c[!] ID '&f%id%&c' đã tồn tại trong thư mục blocks!"
+  success: "&e[MMOBlock] &aĐã tạo thành công: &fblocks/%id%.yml"
+reload:
+  success: "&e[MMOBlock] &aHệ thống đã được làm mới thành công! &7(%ms%ms) &8- &fĐã nạp lại ngôn ngữ, config và dữ liệu blocks."
+block:
+  removed: "&e[MMOBlock] &cĐã xóa vĩnh viễn Block, Model và Hitbox."
+list:
+  title: "§0MMOBlock Manager"
+  gui-world: "§7World: §f%world%"
+  gui-coords: "§7Tọa độ: §f%x%, %y%, %z%"
+  gui-type: "§7Loại: §f%type%"
+  gui-delete-hint: "§c➤ Left-Click To Remove"
+  delete-success: "§c[MMOBlock] Đã xóa thành công khối %id% tại tọa độ %coords%!"

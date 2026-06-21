@@ -1,0 +1,46 @@
+general:
+  no-console: "&cOnly players can execute this command!"
+  usage: "&cUsage: %syntax%"
+  invalid-action: "&cInvalid action! (edit, save, remove)"
+  error-save: "&cSystem error occurred while saving the structure file!"
+
+commands:
+  struct:
+    desc: "Manage structures and save .yml files"
+  place:
+    desc: "Place an MMOBlock with custom configuration"
+  create:
+    desc: "Create a new block configuration from 2.8 template"
+  reload:
+    desc: "Reload all configurations and refresh Holograms/Hitboxes"
+  list:
+    desc: "Mở danh sách quản lý tất cả MMOBlock đã đặt."
+struct:
+  edit-on: "&e[MMOBlock] &aEdit Mode ENABLED. Click on the blocks you want to save."
+  edit-off: "&e[MMOBlock] &cEdit Mode DISABLED. All temporary blocks reverted."
+  missing-id: "&cMissing structure ID!"
+  no-blocks: "&cYou haven't selected any blocks to save!"
+  save-success: "&e[MMOBlock] &aSuccessfully saved structure &f%id% &awith &f%count% &ablocks!"
+  not-found: "&cStructure ID not found: &f%id%"
+  remove-success: "&e[MMOBlock] &aSuccessfully deleted structure &f%id%&a!"
+  remove-failed: "&cCould not delete structure file &f%id%&c! (Check permissions)"
+
+place:
+  not-found: "&c[!] Block configuration not found: &f%id%"
+  success: "&e[MMOBlock] &aSuccessfully placed block '&f%id%&a'!"
+
+create:
+  already-exists: "&c[!] ID '&f%id%&c' already exists in the blocks folder!"
+  success: "&e[MMOBlock] &aSuccessfully created: &fblocks/%id%.yml"
+
+reload:
+  success: "&e[MMOBlock] &aSystem successfully reloaded! &7(%ms%ms) &8- &fLanguage, config, and block data updated."
+block:
+  removed: "&e[MMOBlock] &cSuccessfully removed Block, Model, and Hitbox."
+list:
+  title: "§0MMOBlock Manager"
+  gui-world: "§7World: §f%world%"
+  gui-coords: "§7Tọa độ: §f%x%, %y%, %z%"
+  gui-type: "§7Loại: §f%type%"
+  gui-delete-hint: "§c➤ Left-Click To Remove"
+  delete-success: "§c[MMOBlock] Đã xóa thành công khối %id% tại tọa độ %coords%!"

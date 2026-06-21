@@ -1,0 +1,30 @@
+name: MMOBlock
+version: 1.0-SNAPSHOT
+main: org.RiverMoon.Main
+api-version: '1.21'
+author: ThienNguyen
+description: Một giải pháp mạnh mẽ cho Custom Entities, Blocks và tương tác vật phẩm.
+
+# Danh sách các plugin cần thiết để MMOBlock hoạt động ổn định
+# softdepend giúp plugin của bạn vẫn chạy được ngay cả khi thiếu các plugin này
+
+commands:
+  mmoblock:
+    description: Lệnh chính của plugin MMOBlock.
+    aliases: [mb, mmob]
+    usage: /<command> help
+    permission: mmoblock.admin
+
+permissions:
+  mmoblock.admin:
+    description: Cho phép sử dụng tất cả các lệnh quản trị của MMOBlock.
+    default: op
+  mmoblock.user:
+    description: Quyền cơ bản để tương tác với các block và entity.
+    default: true
+  mmoblock.bypass.cooldown:
+    description: Bỏ qua thời gian hồi (cooldown) khi tương tác.
+    default: false
+
+# Chỉ định thư viện cần thiết nếu bạn có dùng các thư viện bên ngoài (ví dụ: HikariCP cho Database)
+# Nếu bạn dùng Maven Shade Plugin để đóng gói thì không cần mục này.

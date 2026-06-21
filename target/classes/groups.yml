@@ -1,0 +1,5 @@
+# groups.yml
+khu_vuc_nui_lua:
+  delay: 5 #tính theo giây mỗi 5 giây nó sẽ respawn random các id dươ
+  1: 50.0  # 50%
+  2: 50.0 # 50%
