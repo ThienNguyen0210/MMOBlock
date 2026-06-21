@@ -1,7 +1,7 @@
 package org.RiverMoon.commands;
 
 import org.RiverMoon.Main;
-import org.RiverMoon.commands.function.*; // Import các class trong package function
+import org.RiverMoon.commands.function.*; 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -15,7 +15,7 @@ public class MMOBlockCommand implements CommandExecutor, TabCompleter {
     private final ArrayList<SubCommand> subCommands = new ArrayList<>();
 
     public MMOBlockCommand(Main plugin) {
-        // Đăng ký các lệnh con vào đây
+        
         subCommands.add(new ReloadCommand(plugin));
         subCommands.add(new CreateCommand(plugin));
         subCommands.add(new PlaceCommand(plugin));

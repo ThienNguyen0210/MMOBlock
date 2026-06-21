@@ -18,7 +18,7 @@ import java.util.UUID;
 
 public class BlockListener implements Listener {
     private final Main plugin;
-    private final LanguageManager lang; // Khai báo LanguageManager
+    private final LanguageManager lang; 
 
     public BlockListener(Main plugin) {
         this.plugin = plugin;
@@ -30,7 +30,7 @@ public class BlockListener implements Listener {
         Player player = event.getPlayer();
         Location loc = event.getBlock().getLocation();
 
-        // Lấy ID từ database trước để biết đây có phải block của plugin không
+        
         String mmoId = plugin.getDatabase().getMMOIdAt(loc);
         if (mmoId == null) return;
 
@@ -39,34 +39,34 @@ public class BlockListener implements Listener {
         int y = loc.getBlockY();
         int z = loc.getBlockZ();
 
-        // LOGIC XÓA VĨNH VIỄN (Admin + Sneak + Break)
+        
         if (player.isOp() && player.isSneaking()) {
-            // 1. Xóa ArmorStand (Model)
+            
             String asUuidStr = plugin.getDatabase().getArmorStandUUID(worldName, x, y, z);
             if (asUuidStr != null) {
                 removeEntityByUUID(asUuidStr);
             }
 
-            // 2. Xóa Interaction (Hitbox)
+            
             String hitboxUuidStr = plugin.getDatabase().getHitboxUUID(worldName, x, y, z);
             if (hitboxUuidStr != null) {
                 removeEntityByUUID(hitboxUuidStr);
             }
 
-            // 3. Xóa Hologram
+            
             plugin.getHoloManager().removeHolo(loc);
 
-            // 4. Xóa dữ liệu trong Database
+            
             plugin.getDatabase().removePlacedBlock(worldName, x, y, z);
 
-            // 5. THỰC HIỆN XÓA BLOCK (Không cancel event)
+            
             player.sendMessage(lang.getMessage("block.removed"));
 
-            // Quan trọng: Return ở đây để không chạy xuống dòng setCancelled phía dưới
+            
             return;
         }
 
-        // Nếu không phải Admin xóa, hoặc không Sneak -> Chặn việc phá block
+        
         event.setCancelled(true);
     }
 
@@ -77,33 +77,33 @@ public class BlockListener implements Listener {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
 
-        // Kiểm tra xem người chơi có đang trong chế độ Edit Structure không
+        
         if (plugin.getStructureManager().isEditing(uuid)) {
             if (event.getClickedBlock() == null) return;
 
-            // Cancel event để không phá block thật hoặc mở menu block (như Chest/Furnace)
+            
             event.setCancelled(true);
             boolean isShift = player.isSneaking();
 
-            // --- CHUỘT TRÁI: CHỌN BLOCK (Biến thành AIR) ---
+            
             if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
                 if (isShift) {
-                    // Shift + Left: Chỉ chọn đúng 1 block duy nhất
+                    
                     plugin.getStructureManager().addSingleBlock(uuid, event.getClickedBlock());
                 } else {
-                    // Left Click: Chọn theo Shape (Sphere/Solid) và lưu vào 1 tầng Undo
+                    
                     plugin.getStructureManager().addBlocksInShape(uuid, event.getClickedBlock());
                 }
             }
 
-            // --- CHUỘT PHẢI: HOÀN TÁC (UNDO) ---
+            
             else if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
                 if (isShift) {
-                    // Shift + Right: Undo lại lần click gần nhất (Tối đa 10 lần)
+                    
                     plugin.getStructureManager().undoLastAction(uuid);
                 } else {
-                    // Right Click thường: Bạn có thể để trống hoặc dùng để "xóa" vùng chọn
-                    // (trả block về trạng thái cũ mà không theo tầng Undo)
+                    
+                    
                     plugin.getStructureManager().removeBlocksInShape(uuid, event.getClickedBlock());
                 }
             }
@@ -111,7 +111,7 @@ public class BlockListener implements Listener {
     }
     @EventHandler
     public void onInventoryClick(org.bukkit.event.inventory.InventoryClickEvent event) {
-        // 1. Kiểm tra tiêu đề GUI (Nên lấy từ LanguageManager nếu ông có đổi title trong config)
+        
         String title = plugin.getLang().getMessage("list.title");
         if (!event.getView().getTitle().equals(title != null ? title : "§0MMOBlock Manager")) return;
 
@@ -123,7 +123,7 @@ public class BlockListener implements Listener {
         org.bukkit.inventory.meta.ItemMeta meta = event.getCurrentItem().getItemMeta();
         if (meta == null) return;
 
-        // 2. Trích xuất tọa độ từ PDC thay vì Lore
+        
         org.bukkit.NamespacedKey key = new org.bukkit.NamespacedKey(plugin, "block_location");
         String locRaw = meta.getPersistentDataContainer().get(key, org.bukkit.persistence.PersistentDataType.STRING);
 
@@ -140,22 +140,22 @@ public class BlockListener implements Listener {
             if (world == null) return;
             org.bukkit.Location loc = new org.bukkit.Location(world, x, y, z);
 
-            // 3. THỰC HIỆN XÓA
-            // Lấy UUID trước khi xóa bản ghi trong DB
+            
+            
             String asUuidStr = plugin.getDatabase().getArmorStandUUID(worldName, x, y, z);
             String hitboxUuidStr = plugin.getDatabase().getHitboxUUID(worldName, x, y, z);
 
             removeEntityByUUID(asUuidStr);
             removeEntityByUUID(hitboxUuidStr);
 
-            // Xóa Hologram & Block vật lý
+            
             plugin.getHoloManager().removeHolo(loc);
             loc.getBlock().setType(Material.AIR);
 
-            // Xóa khỏi Database
+            
             plugin.getDatabase().removePlacedBlock(worldName, x, y, z);
 
-            // 4. Thông báo thành công (Dùng message từ config cho chuyên nghiệp)
+            
             String successMsg = plugin.getLang().getMessage("list.delete-success");
             if (successMsg != null) {
                 player.sendMessage(successMsg

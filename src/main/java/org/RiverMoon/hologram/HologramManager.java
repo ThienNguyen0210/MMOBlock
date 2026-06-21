@@ -67,13 +67,13 @@ public class HologramManager {
                 }
                 uuids.add(itemUuid);
             } else {
-                // Spawn TextDisplay
+                
                 Component textComponent = parse(value, progress, bar, respawnTime);
                 TextDisplay td = currentLoc.getWorld().spawn(currentLoc, TextDisplay.class, display -> {
                     display.setBillboard(Display.Billboard.CENTER);
                     display.text(textComponent);
 
-                    // --- THÊM TAG ĐỂ DỌN RÁC ---
+                    
                     display.addScoreboardTag("MMOBlock_Holo");
 
                     if (holoSection.getParent() != null) {

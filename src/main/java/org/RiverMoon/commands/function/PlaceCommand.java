@@ -57,7 +57,7 @@ public class PlaceCommand implements SubCommand {
 
         Location loc = player.getLocation().getBlock().getLocation();
 
-        // --- 1. XỬ LÝ BLOCK VẬT LÝ & VA CHẠM ---
+        
         ConfigurationSection blockSettings = config.getConfigurationSection(id + ".block-settings");
         ConfigurationSection modelSettings = config.getConfigurationSection(id + ".block-itemsadder");
 
@@ -74,7 +74,7 @@ public class PlaceCommand implements SubCommand {
             loc.getBlock().setType(Material.AIR);
         }
 
-        // --- 2. XỬ LÝ MODEL HIỂN THỊ ---
+        
         UUID asUUID = null;
         if (modelEnabled) {
             String modelMatStr = modelSettings.getString("material", "PAPER");
@@ -101,23 +101,23 @@ public class PlaceCommand implements SubCommand {
             asUUID = as.getUniqueId();
         }
 
-        // --- 3. TRIỆU HỒI HITBOX (INTERACTION) ---
+        
         final Interaction[] spawnedInteraction = {null};
         ConfigurationSection hitboxSection = config.getConfigurationSection(id + ".hitbox");
 
-        // Khởi tạo các giá trị offset mặc định
+        
         double offX = 0, offY = 0, offZ = 0;
 
         if (hitboxSection != null) {
             float width = (float) hitboxSection.getDouble("width", 1.0) + 0.01f;
             float height = (float) hitboxSection.getDouble("height", 1.0) + 0.01f;
 
-            // Lấy offset từ cấu hình
+            
             offX = hitboxSection.getDouble("offset_x", 0.0);
             offY = hitboxSection.getDouble("offset_y", 0.0);
             offZ = hitboxSection.getDouble("offset_z", 0.0);
 
-            // Tính toán vị trí spawn dựa trên trung tâm block + offset
+            
             Location spawnLoc = loc.clone().add(0.5 + offX, 0.0 + offY, 0.5 + offZ);
 
             spawnedInteraction[0] = loc.getWorld().spawn(spawnLoc, Interaction.class, inter -> {
@@ -130,16 +130,16 @@ public class PlaceCommand implements SubCommand {
             });
         }
 
-        // --- 4. LƯU VÀO DATABASE ---
+        
         UUID hitboxUUID = (spawnedInteraction[0] != null) ? spawnedInteraction[0].getUniqueId() : null;
 
-        // Lưu kèm theo 3 giá trị offset mới
+        
         plugin.getDatabase().savePlacedBlock(
                 loc.getWorld().getName(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(),
                 id,null, asUUID, hitboxUUID, offX, offY, offZ
         );
 
-        // --- 5. HIỂN THỊ HOLOGRAM ---
+        
         ConfigurationSection holoSection = config.getConfigurationSection(id + ".hologram.customHolo");
         if (holoSection != null) {
             plugin.getHoloManager().spawnHolo(loc, holoSection, null, null, null);

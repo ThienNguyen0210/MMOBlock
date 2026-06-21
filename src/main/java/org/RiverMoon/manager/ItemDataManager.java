@@ -17,7 +17,7 @@ public class ItemDataManager {
     private YamlConfiguration config;
 
     public ItemDataManager(Main plugin) {
-        // Tạo file itemdata.yml trong thư mục plugin
+        
         this.file = new File(plugin.getDataFolder(), "itemdata.yml");
         if (!file.exists()) {
             try {
@@ -29,9 +29,7 @@ public class ItemDataManager {
         this.config = YamlConfiguration.loadConfiguration(file);
     }
 
-    /**
-     * Lưu ItemStack vào file dưới dạng Base64
-     */
+    
     public void saveItem(String id, ItemStack item) {
         try {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -48,9 +46,7 @@ public class ItemDataManager {
         }
     }
 
-    /**
-     * Lấy ItemStack từ file dựa trên ID
-     */
+    
     public ItemStack getItem(String id) {
         String base64 = config.getString(id);
         if (base64 == null) return null;

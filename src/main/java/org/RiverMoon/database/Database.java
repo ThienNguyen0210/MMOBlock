@@ -23,7 +23,7 @@ public class Database {
             Class.forName("org.sqlite.JDBC");
             connection = DriverManager.getConnection("jdbc:sqlite:" + dataFolder);
 
-            // Tối ưu SQLite
+            
             try (Statement stmt = connection.createStatement()) {
                 stmt.execute("PRAGMA journal_mode = WAL;");
                 stmt.execute("PRAGMA synchronous = NORMAL;");
@@ -31,10 +31,10 @@ public class Database {
 
             connection.setAutoCommit(true);
 
-            // Bước 1: Tạo bảng nếu chưa có
+            
             createTables();
 
-            // Bước 2: Kiểm tra và nâng cấp cấu trúc bảng (Migration)
+            
             updateDatabaseStructure();
 
         } catch (Exception e) {
@@ -42,42 +42,42 @@ public class Database {
         }
     }
     private void updateDatabaseStructure() {
-        // Lệnh thêm cột respawn_at nếu chưa có
-        // Lưu ý: INTEGER trong SQLite có thể chứa giá trị Long (timestamp)
+        
+        
         String sql = "ALTER TABLE placed_blocks ADD COLUMN respawn_at INTEGER DEFAULT 0";
 
         try (Statement s = connection.createStatement()) {
             s.execute(sql);
             plugin.getLogger().info("§a[Database] Đã nâng cấp cấu trúc bảng: Thêm cột respawn_at thành công.");
         } catch (SQLException e) {
-            // Nếu lỗi chứa từ "duplicate column", nghĩa là cột đã tồn tại rồi, không cần làm gì cả.
+            
             if (e.getMessage().contains("duplicate column name")) {
-                // Cột đã tồn tại, bỏ qua
+                
             } else {
-                // Lỗi khác thì in ra để kiểm tra
-                // plugin.getLogger().warning("Thông báo: " + e.getMessage());
+                
+                
             }
         }
     }
-    // 2. Hàm cập nhật thời gian hồi sinh
+    
     public void updateRespawnTime(String world, int x, int y, int z, long respawnAt) {
-        // Phải có đủ 4 điều kiện WHERE: world, x, y, z
+        
         String sql = "UPDATE placed_blocks SET respawn_at = ? WHERE world = ? AND x = ? AND y = ? AND z = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setLong(1, respawnAt);
             ps.setString(2, world);
             ps.setInt(3, x);
             ps.setInt(4, y);
-            ps.setInt(5, z); // Thêm dòng này
+            ps.setInt(5, z); 
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
-    // 3. Hàm lấy các block đang chờ hồi sinh (Global Task sẽ dùng hàm này)
+    
     public List<PlacedBlockData> getBlocksReadyToRespawn(long currentTime) {
         List<PlacedBlockData> list = new ArrayList<>();
-        // Lấy những block có respawn_at > 0 (đang đợi) và <= thời gian hiện tại (đã đến lúc)
+        
         String sql = "SELECT * FROM placed_blocks WHERE respawn_at > 0 AND respawn_at <= ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setLong(1, currentTime);
@@ -86,7 +86,7 @@ public class Database {
                 list.add(new PlacedBlockData(
                         rs.getString("world"), rs.getInt("x"), rs.getInt("y"), rs.getInt("z"),
                         rs.getString("mmo_id"), rs.getString("group_id"),
-                        null, null, // UUID sẽ được tạo mới khi spawn
+                        null, null, 
                         rs.getDouble("hb_off_x"), rs.getDouble("hb_off_y"), rs.getDouble("hb_off_z")
                 ));
             }
@@ -103,7 +103,7 @@ public class Database {
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 long respawnAt = rs.getLong("respawn_at");
-                // Trả về true nếu respawn_at > 0 và chưa tới giờ hiện tại (đang đợi)
+                
                 return respawnAt > 0 && respawnAt > currentTime;
             }
         } catch (SQLException e) {
@@ -111,7 +111,7 @@ public class Database {
         }
         return false;
     }
-    // Trong Database.java
+    
     private void createTables() {
         try (Statement s = connection.createStatement()) {
             s.execute("CREATE TABLE IF NOT EXISTS placed_blocks (" +
@@ -119,13 +119,13 @@ public class Database {
                     "mmo_id TEXT, group_id TEXT, " +
                     "as_uuid TEXT, hitbox_uuid TEXT, " +
                     "hb_off_x REAL, hb_off_y REAL, hb_off_z REAL, " +
-                    "respawn_at INTEGER DEFAULT 0, " + // THÊM CỘT NÀY (Lưu timestamp milis)
+                    "respawn_at INTEGER DEFAULT 0, " + 
                     "PRIMARY KEY (world, x, y, z))");
         } catch (SQLException e) { e.printStackTrace(); }
     }
 
 
-    // Thêm hàm lấy Group ID
+    
     public String getGroupIdAt(String world, int x, int y, int z) {
         String sql = "SELECT group_id FROM placed_blocks WHERE world = ? AND x = ? AND y = ? AND z = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -143,7 +143,7 @@ public class Database {
                                 String mmoId, String groupId,
                                 UUID asUUID, UUID hbUUID,
                                 double ox, double oy, double oz) {
-        // Câu lệnh SQL với 12 dấu hỏi tương ứng 12 cột
+        
         String sql = "REPLACE INTO placed_blocks (world, x, y, z, mmo_id, group_id, as_uuid, hitbox_uuid, hb_off_x, hb_off_y, hb_off_z, respawn_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, world);
@@ -157,7 +157,7 @@ public class Database {
             ps.setDouble(9, ox);
             ps.setDouble(10, oy);
             ps.setDouble(11, oz);
-            ps.setLong(12, 0); // Khi lưu quặng sống, đặt respawn_at mặc định là 0
+            ps.setLong(12, 0); 
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -209,7 +209,7 @@ public class Database {
 
     public List<PlacedBlockData> getAllPlacedBlocks() {
         List<PlacedBlockData> blocks = new ArrayList<>();
-        String sql = "SELECT * FROM placed_blocks"; // Lấy tất cả các cột
+        String sql = "SELECT * FROM placed_blocks"; 
         try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
@@ -225,9 +225,9 @@ public class Database {
                         rs.getString("group_id"),
                         asUuidStr != null ? UUID.fromString(asUuidStr) : null,
                         hbUuidStr != null ? UUID.fromString(hbUuidStr) : null,
-                        rs.getDouble("hb_off_x"), // Đọc offset X mới từ DB
-                        rs.getDouble("hb_off_y"), // Đọc offset Y mới từ DB
-                        rs.getDouble("hb_off_z")  // Đọc offset Z mới từ DB
+                        rs.getDouble("hb_off_x"), 
+                        rs.getDouble("hb_off_y"), 
+                        rs.getDouble("hb_off_z")  
                 ));
             }
         } catch (SQLException e) {

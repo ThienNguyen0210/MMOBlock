@@ -39,7 +39,7 @@ public class ListCommand implements SubCommand {
     public void perform(CommandSender sender, String[] args) {
         if (!(sender instanceof Player player)) return;
 
-        // Lấy tiêu đề từ LanguageManager cho đồng bộ
+        
         String title = lang.getMessage("list.title");
         Inventory inv = Bukkit.createInventory(null, 54, title != null ? title : "§0MMOBlock Manager");
 
@@ -71,7 +71,7 @@ public class ListCommand implements SubCommand {
                 String locationData = data.getWorldName() + ":" + data.getX() + ":" + data.getY() + ":" + data.getZ();
                 meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, locationData);
 
-                // Tạo Lore dựa trên LanguageManager
+                
                 List<String> lore = new ArrayList<>();
                 lore.add(lang.getMessage("list.gui-world").replace("%world%", data.getWorldName()));
                 lore.add(lang.getMessage("list.gui-coords")

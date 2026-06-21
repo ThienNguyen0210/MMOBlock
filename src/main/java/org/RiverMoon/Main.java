@@ -34,10 +34,10 @@ public class Main extends JavaPlugin {
     private GroupManager groupManager;
     @Override
     public void onEnable() {
-        this.groupManager = new GroupManager(this); // Khởi tạo Manager
+        this.groupManager = new GroupManager(this); 
         this.groupManager.loadGroups();
         this.itemDataManager = new ItemDataManager(this);
-        // --- BƯỚC MỚI: TẠO CÁC FILE MẪU NẾU CHƯA CÓ ---
+        
         this.structureManager = new StructureManager(this);
         this.miningListener = new MiningListener(this);
         getServer().getPluginManager().registerEvents(this.miningListener, this);
@@ -46,35 +46,33 @@ public class Main extends JavaPlugin {
         saveDefaultBlocks();
         this.languageManager = new LanguageManager(this);
         saveDefaultConfig();
-        // 1. Khởi tạo Database và Config
+        
         this.database = new Database(this);
         this.database.connect();
 
         this.configManager = new ConfigManager(this);
         configManager.reloadAll();
-        getServer().getScheduler().runTaskLater(this, this::loadAllHolograms, 200L); // Delay 2 giây
-        // 2. Khởi tạo Hệ thống Hologram
+        getServer().getScheduler().runTaskLater(this, this::loadAllHolograms, 200L); 
+        
         this.hologramManager = new HologramManager();
         this.hologramProvider = new HologramProvider(this);
-        // 3. Đăng ký Command
+        
         MMOBlockCommand mainCommand = new MMOBlockCommand(this);
         getCommand("mmoblock").setExecutor(mainCommand);
         getCommand("mmoblock").setTabCompleter(mainCommand);
 
-        // 4. Load dữ liệu từ DB
+        
         loadAllHolograms();
 
-        // 5. Đăng ký Events
+        
         getServer().getPluginManager().registerEvents(new BlockListener(this), this);
         getServer().getPluginManager().registerEvents(new MiningListener(this), this);
         getServer().getScheduler().runTaskLater(this, () -> {
             loadAllHolograms();
-        }, 60L); // 200 ticks = 10 giây (1 giây = 20 ticks)
+        }, 60L); 
     }
 
-    /**
-     * Tự động tạo thư mục blocks và copy file mẫu từ Resource nếu chưa tồn tại
-     */
+    
     private void saveDefaultBlocks() {
         File blockFolder = new File(getDataFolder(), "blocks");
 
@@ -101,7 +99,7 @@ public class Main extends JavaPlugin {
     }
     public void loadAllHolograms() {
         int updatedCount = 0;
-        // Lấy toàn bộ dữ liệu blocks từ Database
+        
         List<PlacedBlockData> allBlocks = database.getAllPlacedBlocks();
 
         if (allBlocks == null || allBlocks.isEmpty()) return;
@@ -112,10 +110,10 @@ public class Main extends JavaPlugin {
             Location loc = data.getLocation();
             if (loc == null || loc.getWorld() == null) continue;
 
-            // 1. KIỂM TRA TRẠNG THÁI HỒI SINH TỪ DATABASE
-            // Nếu quặng đang trong thời gian chờ hồi sinh (respawn_at > 0),
-            // chúng ta bỏ qua không nạp lại model/hitbox để tránh lỗi.
-            // Lưu ý: Bạn cần thêm field respawnAt vào PlacedBlockData hoặc check trực tiếp qua DB.
+            
+            
+            
+            
             if (database.isWaitingForRespawn(data.getWorldName(), data.getX(), data.getY(), data.getZ(), currentTime)) {
                 continue;
             }
@@ -130,7 +128,7 @@ public class Main extends JavaPlugin {
             FileConfiguration config = configManager.getConfig(id);
             if (config == null) continue;
 
-            // 2. DỌN DẸP THỰC THỂ CŨ TRƯỚC KHI TẠO MỚI
+            
             loc.getWorld().getNearbyEntities(loc.clone().add(0.5, 0.5, 0.5), 1.5, 1.5, 1.5).forEach(entity -> {
                 if (entity.getScoreboardTags().contains("MMOBlock_Hitbox") ||
                         entity.getScoreboardTags().contains("MMOBlock_Holo") ||
@@ -140,7 +138,7 @@ public class Main extends JavaPlugin {
             });
             hologramManager.removeHolo(loc);
 
-            // 3. THIẾT LẬP BLOCK VẬT LÝ
+            
             ConfigurationSection blockSettings = config.getConfigurationSection(id + ".block-settings");
             ConfigurationSection modelSettings = config.getConfigurationSection(id + ".block-itemsadder");
 
@@ -154,14 +152,14 @@ public class Main extends JavaPlugin {
                 matToSet = org.bukkit.Material.matchMaterial(matStr.toUpperCase());
                 if (matToSet == null) matToSet = org.bukkit.Material.STONE;
             } else if (modelEnabled) {
-                matToSet = org.bukkit.Material.BARRIER; // Bắt buộc dùng vật cản nếu dùng model
+                matToSet = org.bukkit.Material.BARRIER; 
             }
 
             if (loc.getBlock().getType() != matToSet) {
                 loc.getBlock().setType(matToSet, false);
             }
 
-            // 4. HỒI PHỤC MODEL (ARMORSTAND)
+            
             UUID newAsUUID = null;
             if (modelEnabled) {
                 String modelMatStr = modelSettings.getString("material", "PAPER");
@@ -188,7 +186,7 @@ public class Main extends JavaPlugin {
                 newAsUUID = as.getUniqueId();
             }
 
-            // 5. HỒI PHỤC HITBOX (INTERACTION)
+            
             UUID newHitboxUUID = null;
             double offX = 0, offY = 0, offZ = 0;
 
@@ -214,13 +212,13 @@ public class Main extends JavaPlugin {
                 newHitboxUUID = inter.getUniqueId();
             }
 
-            // 6. HỒI PHỤC HOLOGRAM
+            
             ConfigurationSection holoSection = config.getConfigurationSection(id + ".hologram.customHolo");
             if (holoSection != null) {
                 hologramManager.spawnHolo(loc, holoSection, null, null, null);
             }
 
-            // 7. ĐỒNG BỘ LẠI DATABASE
+            
             database.savePlacedBlock(
                     loc.getWorld().getName(),
                     loc.getBlockX(),
@@ -244,45 +242,45 @@ public class Main extends JavaPlugin {
     public void startGlobalRespawnTask() {
         getServer().getScheduler().runTaskTimer(this, () -> {
             long now = System.currentTimeMillis();
-            // Lấy danh sách quặng đã quá giờ hồi sinh từ DB
+            
             List<PlacedBlockData> readyBlocks = database.getBlocksReadyToRespawn(now);
 
             for (PlacedBlockData data : readyBlocks) {
                 Location loc = data.getLocation();
                 if (loc == null || loc.getWorld() == null) continue;
 
-                // KIỂM TRA CHUNK: Chỉ hồi sinh nếu Chunk đang nạp (Tránh lag/lỗi unload)
+                
                 if (loc.getWorld().isChunkLoaded(loc.getBlockX() >> 4, loc.getBlockZ() >> 4)) {
 
-                    // Lấy thực thể Interaction cũ dựa trên UUID lưu trong Database
+                    
                     org.bukkit.entity.Entity entity = org.bukkit.Bukkit.getEntity(data.getHitboxUuid());
 
                     if (entity instanceof Interaction interaction) {
                         String nextId = data.getMmoId();
 
-                        // Nếu là Group, hãy chọn một ID ngẫu nhiên mới
+                        
                         if (data.getGroupId() != null) {
                             nextId = groupManager.getRandomId(data.getGroupId());
                         }
 
                         FileConfiguration config = configManager.getConfig(nextId);
 
-                        // Gọi hàm hồi sinh chính (Bạn cần chắc chắn hàm này trong MiningListener là public)
+                        
                         miningListener.handleInstantRespawn(loc, nextId, config, interaction, data.getGroupId());
 
-                        // QUAN TRỌNG: Đánh dấu đã hồi sinh xong bằng cách set respawn_at = 0
+                        
                         database.updateRespawnTime(data.getWorldName(), data.getX(), data.getY(), data.getZ(), 0);
                     } else {
-                        // Nếu không tìm thấy Interaction (bị xóa do bug/clear entity),
-                        // bạn có thể thêm logic spawn lại Hitbox mới ở đây nếu cần.
+                        
+                        
                         getLogger().warning("Không tìm thấy Hitbox cho quặng tại " + data.getX() + ", " + data.getZ() + ". Bỏ qua hồi sinh.");
                         database.updateRespawnTime(data.getWorldName(), data.getX(), data.getY(), data.getZ(), 0);
                     }
                 }
             }
-        }, 40L, 40L); // Chạy sau 2 giây và lặp lại mỗi 2 giây (40 ticks)
+        }, 40L, 40L); 
     }
-    // Getters
+    
     public GroupManager getGroupManager() {
         return groupManager;
     }

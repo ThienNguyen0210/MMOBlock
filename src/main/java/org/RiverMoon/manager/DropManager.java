@@ -16,7 +16,7 @@ import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class DropManager {
-    private final Main plugin; // Cần tham chiếu Main để gọi ItemDataManager
+    private final Main plugin; 
     private final Random random = new Random();
 
     public DropManager(Main plugin) {
@@ -111,30 +111,30 @@ public class DropManager {
 
         ItemStack item = null;
 
-        // 1. Xử lý vật phẩm từ Database Base64
+        
         if (matStr.toLowerCase().startsWith("data_")) {
             String dataId = matStr.substring(5);
             item = plugin.getItemDataManager().getItem(dataId);
         }
 
-        // 2. Logic MMOItems và ItemsAdder (Xử lý an toàn)
+        
         if (item == null && matStr.contains(":")) {
             String[] parts = matStr.split(":");
 
-            // KIỂM TRA MMOITEMS AN TOÀN
+            
             if (Bukkit.getPluginManager().isPluginEnabled("MMOItems")) {
                 try {
-                    // Gọi qua class đầy đủ để tránh lỗi link class sớm
+                    
                     item = net.Indyuce.mmoitems.MMOItems.plugin.getItem(
                             parts[0].toUpperCase(),
                             parts[1].toUpperCase()
                     );
                 } catch (Throwable ignored) {
-                    // "Throwable" bắt cả Error và Exception, "ignored" để không in gì ra console
+                    
                 }
             }
 
-            // KIỂM TRA ITEMSADDER AN TOÀN
+            
             if (item == null && Bukkit.getPluginManager().isPluginEnabled("ItemsAdder")) {
                 try {
                     String iaId = matStr.startsWith("_iainternal:") ? matStr.replace("_iainternal:", "") : matStr;
@@ -144,13 +144,13 @@ public class DropManager {
             }
         }
 
-        // 3. Logic mặc định cho Material Minecraft
+        
         if (item == null) {
             Material mat = Material.matchMaterial(matStr.toUpperCase());
             if (mat == null) mat = Material.STONE;
             item = new ItemStack(mat);
 
-            // Chỉ thêm lore cảnh báo nếu thực sự có lỗi trong config (không phải do thiếu plugin)
+            
             if (mat == Material.STONE && !matStr.equalsIgnoreCase("STONE")) {
                 org.bukkit.inventory.meta.ItemMeta meta = item.getItemMeta();
                 if (meta != null) {
@@ -161,11 +161,11 @@ public class DropManager {
             }
         }
 
-        // Clone và set số lượng
+        
         item = item.clone();
         item.setAmount(amount);
 
-        // Xử lý drop
+        
         if (dropType.equalsIgnoreCase("inventory")) {
             player.getInventory().addItem(item).values().forEach(over ->
                     loc.getWorld().dropItemNaturally(loc, over));

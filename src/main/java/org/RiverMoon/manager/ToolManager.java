@@ -45,18 +45,18 @@ public class ToolManager {
         ItemStack hand = player.getInventory().getItemInMainHand();
         if (hand == null || hand.getType() == Material.AIR) return;
 
-        // Kiểm tra xem có phải item có NBT Type (thường là MMOItems) không
+        
         NBTItem nbtItem = NBTItem.get(hand);
         if (nbtItem.hasType()) {
             try {
-                // Gọi một hàm riêng để xử lý MMOItems
+                
                 if (applyMMOItemsDurability(player, hand, nbtItem, damageAmount)) return;
             } catch (NoClassDefFoundError | Exception e) {
-                // Nếu lỗi class (thiếu plugin), code sẽ tự trôi xuống phần Vanilla bên dưới
+                
             }
         }
 
-        // Vanilla Logic - Sẽ chạy nếu không phải MMOItems HOẶC nếu MMOItems API bị lỗi
+        
         if (hand.getItemMeta() instanceof Damageable meta) {
             meta.setDamage(meta.getDamage() + damageAmount);
             hand.setItemMeta(meta);
@@ -64,7 +64,7 @@ public class ToolManager {
         }
     }
 
-    // Hàm phụ trách riêng cho MMOItems để cô lập lỗi nạp class
+    
     private boolean applyMMOItemsDurability(Player player, ItemStack hand, NBTItem nbtItem, int damageAmount) {
         LiveMMOItem mmoItem = new LiveMMOItem(nbtItem);
         double currentDurability = -1;

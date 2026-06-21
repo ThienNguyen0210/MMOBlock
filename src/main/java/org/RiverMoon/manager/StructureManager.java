@@ -26,9 +26,7 @@ public class StructureManager {
         playerSize.put(uuid, size);
     }
 
-    /**
-     * CHỌN 1 BLOCK DUY NHẤT (Shift + Left Click)
-     */
+    
     public void addSingleBlock(UUID uuid, Block block) {
         if (!isEditing.getOrDefault(uuid, false)) return;
 
@@ -41,9 +39,7 @@ public class StructureManager {
         }
     }
 
-    /**
-     * CHỌN THEO VÙNG (Left Click)
-     */
+    
     public void addBlocksInShape(UUID uuid, Block centerBlock) {
         if (!isEditing.getOrDefault(uuid, false)) return;
 
@@ -74,9 +70,7 @@ public class StructureManager {
         }
     }
 
-    /**
-     * LOẠI BỎ BLOCK KHỎI VÙNG CHỌN (Biến AIR thành block thật lại)
-     */
+    
     public void removeBlocksInShape(UUID uuid, Block centerBlock) {
         if (!isEditing.getOrDefault(uuid, false)) return;
 
@@ -100,9 +94,7 @@ public class StructureManager {
         if (count > 0) sendMessage(uuid, "§c- Đã bỏ chọn " + count + " blocks.");
     }
 
-    /**
-     * HOÀN TÁC (Shift + Right Click)
-     */
+    
     public void undoLastAction(UUID uuid) {
         LinkedList<Map<Location, Material>> history = undoHistory.get(uuid);
         if (history == null || history.isEmpty()) {
@@ -119,7 +111,7 @@ public class StructureManager {
         sendMessage(uuid, "§e[MMOBlock] §fĐã Undo (" + lastAction.size() + " blocks). Còn: " + history.size() + "/10");
     }
 
-    // --- HÀM HỖ TRỢ LOGIC ---
+    
 
     private void processBlockSelection(UUID uuid, Block target, Map<Location, Material> currentChanges) {
         if (target.getType() == Material.AIR || target.getType() == Material.CAVE_AIR) return;
@@ -141,19 +133,19 @@ public class StructureManager {
 
     public void toggleEditMode(UUID uuid) {
         if (isEditing.getOrDefault(uuid, false)) {
-            // --- ĐOẠN THÊM: Tự động fill lại block khi TẮT edit ---
+            
             Map<Location, Material> blocks = allSelectedBlocks.get(uuid);
             if (blocks != null) {
                 blocks.forEach((loc, mat) -> {
-                    // Chỉ đặt lại nếu vị trí đó vẫn đang là AIR (tránh ghi đè nếu block đã bị thay đổi khác)
+                    
                     if (loc.getBlock().getType() == Material.AIR || loc.getBlock().getType() == Material.CAVE_AIR) {
                         loc.getBlock().setType(mat);
                     }
                 });
             }
-            // ---------------------------------------------------
+            
 
-            // Sau khi đã fill xong mới dọn dẹp bộ nhớ
+            
             isEditing.put(uuid, false);
             undoHistory.remove(uuid);
             allSelectedBlocks.remove(uuid);

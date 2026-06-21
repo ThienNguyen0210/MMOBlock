@@ -17,7 +17,7 @@ public class LanguageManager {
 
     public LanguageManager(Main plugin) {
         this.plugin = plugin;
-        // Tự động bung các file mặc định trước khi load
+        
         saveDefaultLanguages();
         reloadLanguage();
     }

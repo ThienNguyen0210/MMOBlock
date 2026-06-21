@@ -52,7 +52,7 @@ public class StructCommand implements SubCommand {
                 String shape = "single";
                 int size = 1;
 
-                // /mmoblock struct edit [shape] [size]
+                
                 if (args.length >= 3) {
                     shape = args[2].toLowerCase();
                 }
@@ -65,7 +65,7 @@ public class StructCommand implements SubCommand {
                     }
                 }
 
-                // Cập nhật công cụ và bật/tắt mode
+                
                 plugin.getStructureManager().setPlayerEditTool(uuid, shape, size);
                 plugin.getStructureManager().toggleEditMode(uuid);
 
@@ -76,7 +76,7 @@ public class StructCommand implements SubCommand {
                 }
             }
             case "undo" -> {
-                // Thêm lệnh /mmoblock struct undo để người dùng có thêm lựa chọn ngoài phím tắt
+                
                 if (!plugin.getStructureManager().isEditing(uuid)) {
                     player.sendMessage("§cBạn phải bật chế độ Edit trước khi Undo.");
                     return;
@@ -103,7 +103,7 @@ public class StructCommand implements SubCommand {
 
     private void saveStructure(Player player, String id) {
         UUID uuid = player.getUniqueId();
-        // Lấy danh sách block đã tổng hợp từ StructureManager
+        
         Map<Location, Material> blocks = plugin.getStructureManager().getSavedBlocks(uuid);
 
         if (blocks == null || blocks.isEmpty()) {
@@ -116,7 +116,7 @@ public class StructCommand implements SubCommand {
         File file = new File(folder, id + ".yml");
         YamlConfiguration config = new YamlConfiguration();
 
-        // Lấy tên world từ block đầu tiên
+        
         String worldName = blocks.keySet().iterator().next().getWorld().getName();
         config.set("info.world", worldName);
 
@@ -143,16 +143,16 @@ public class StructCommand implements SubCommand {
 
             player.sendMessage("§e[MMOBlock] §aĐã lưu cấu trúc §f" + id + " §avới §f" + count + " §ablocks.");
 
-            // --- ĐOẠN SỬA QUAN TRỌNG: Đặt lại block vật lý trước khi dọn dẹp bộ nhớ ---
+            
             blocks.forEach((loc, mat) -> {
-                // Nếu vị trí đó đang là AIR hoặc CAVE_AIR thì mới đặt lại block gốc
+                
                 if (loc.getBlock().getType() == Material.AIR || loc.getBlock().getType() == Material.CAVE_AIR) {
                     loc.getBlock().setType(mat);
                 }
             });
-            // -----------------------------------------------------------------------
+            
 
-            // Sau khi đã fill lại block rồi mới tắt Edit Mode
+            
             plugin.getStructureManager().toggleEditMode(uuid);
 
         } catch (IOException e) {

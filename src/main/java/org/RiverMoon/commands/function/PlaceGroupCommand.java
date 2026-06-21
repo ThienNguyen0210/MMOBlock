@@ -49,8 +49,8 @@ public class PlaceGroupCommand implements SubCommand {
 
         String groupId = args[1];
 
-        // 1. Lấy ID ngẫu nhiên đầu tiên từ GroupManager (Bạn cần tạo Manager này)
-        // Nếu chưa có Manager, tạm thời lấy từ một List trong config groups.yml
+        
+        
         String id = plugin.getGroupManager().getRandomId(groupId);
 
         if (id == null) {
@@ -63,7 +63,7 @@ public class PlaceGroupCommand implements SubCommand {
 
         Location loc = player.getLocation().getBlock().getLocation();
 
-        // --- 2. XỬ LÝ BLOCK VẬT LÝ ---
+        
         ConfigurationSection blockSettings = config.getConfigurationSection(id + ".block-settings");
         ConfigurationSection modelSettings = config.getConfigurationSection(id + ".block-itemsadder");
 
@@ -78,7 +78,7 @@ public class PlaceGroupCommand implements SubCommand {
             loc.getBlock().setType(mat != null ? mat : Material.BARRIER);
         }
 
-        // --- 3. XỬ LÝ MODEL HIỂN THỊ (ARMORSTAND) ---
+        
         UUID asUUID = null;
         if (modelEnabled) {
             String modelMatStr = modelSettings.getString("material", "PAPER");
@@ -104,7 +104,7 @@ public class PlaceGroupCommand implements SubCommand {
             asUUID = as.getUniqueId();
         }
 
-        // --- 4. TRIỆU HỒI HITBOX (INTERACTION) ---
+        
         UUID hitboxUUID = null;
         double offX = 0, offY = 0, offZ = 0;
         ConfigurationSection hitboxSection = config.getConfigurationSection(id + ".hitbox");
@@ -127,14 +127,14 @@ public class PlaceGroupCommand implements SubCommand {
             hitboxUUID = inter.getUniqueId();
         }
 
-        // --- 5. LƯU VÀO DATABASE (QUAN TRỌNG: LƯU CẢ GROUPID) ---
-        // Đảm bảo bạn đã sửa hàm savePlacedBlock trong Database.java để nhận thêm groupId
+        
+        
         plugin.getDatabase().savePlacedBlock(
                 loc.getWorld().getName(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(),
                 id, groupId, asUUID, hitboxUUID, offX, offY, offZ
         );
 
-        // --- 6. HIỂN THỊ HOLOGRAM ---
+        
         ConfigurationSection holoSection = config.getConfigurationSection(id + ".hologram.customHolo");
         if (holoSection != null) {
             plugin.getHoloManager().spawnHolo(loc, holoSection, null, null, null);
@@ -146,7 +146,7 @@ public class PlaceGroupCommand implements SubCommand {
     @Override
     public List<String> getSubcommandArguments(CommandSender sender, String[] args) {
         if (args.length == 2) {
-            // Trả về danh sách Group ID từ Manager của bạn để Tab-Complete
+            
             return new ArrayList<>(plugin.getGroupManager().getGroupIds());
         }
         return new ArrayList<>();

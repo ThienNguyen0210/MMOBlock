@@ -40,43 +40,43 @@ public class MiningListener implements Listener {
     private final Map<Location, Integer> blockProgress = new HashMap<>();
     private final Map<UUID, Long> cooldowns = new HashMap<>();
     private final Map<Location, BukkitTask> refundTasks = new HashMap<>();
-    private ToolManager toolManager; // Đừng để final nếu muốn gán trong try-catch
+    private ToolManager toolManager; 
     private final DropManager dropManager;
     public MiningListener(Main plugin) {
         this.plugin = plugin;
         this.dropManager = new DropManager(plugin);
         try {
-            // Chỉ khởi tạo nếu class tồn tại
+            
             this.toolManager = new ToolManager();
             plugin.getLogger().info("§a[MMOBlock] Đã kết nối với ToolManager.");
         } catch (NoClassDefFoundError | Exception e) {
-            // Nếu thiếu MMOItems, toolManager sẽ là null
+            
             this.toolManager = null;
             plugin.getLogger().warning("§c[MMOBlock] Không tìm thấy MMOItems. Chế độ Vanilla đã được kích hoạt.");
         }
     }
 
-    // --- 1. CHẶN TƯƠNG TÁC BLOCK VẬT LÝ ---
+    
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPhysicalInteract(PlayerInteractEvent event) {
         if (event.getClickedBlock() == null) return;
         Location loc = event.getClickedBlock().getLocation();
 
         if (plugin.getDatabase().getMMOIdAt(loc) != null) {
-            if (event.getPlayer().isOp() && event.getPlayer().isSneaking()) return; // Cho phép Admin shift-break
+            if (event.getPlayer().isOp() && event.getPlayer().isSneaking()) return; 
             event.setCancelled(true);
         }
     }
 
-    // --- 2. XỬ LÝ CHUỘT PHẢI VÀO HITBOX ---
+    
     @EventHandler
     public void onHitboxInteract(PlayerInteractEntityEvent event) {
         if (!(event.getRightClicked() instanceof Interaction interaction)) return;
-        // Đổi "right" thành "right_click" để khớp với config
+        
         handleMining(event.getPlayer(), interaction, "right_click");
     }
 
-    // --- 3. XỬ LÝ CHUỘT TRÁI (ĐÀO) VÀO HITBOX ---
+    
     @EventHandler
     public void onHitboxDamage(EntityDamageByEntityEvent event) {
         if (event.getDamager() instanceof Player player && event.getEntity() instanceof Interaction interaction) {
@@ -85,7 +85,7 @@ public class MiningListener implements Listener {
         }
     }
     private void handleMining(Player player, Interaction interaction, String actionType) {
-        // 1. Kiểm tra trạng thái Hitbox và Quặng
+        
         if (!interaction.getScoreboardTags().contains("MMOBlock_Hitbox") ||
                 interaction.getScoreboardTags().contains("MMOBlock_Respawning") ||
                 !interaction.isResponsive()) {
@@ -99,13 +99,13 @@ public class MiningListener implements Listener {
                 interaction.getLocation().getBlockZ()
         );
 
-        // 2. Admin shift-break
+        
         if (player.isOp() && player.isSneaking()) {
             removeBlockPermanently(player, loc, interaction);
             return;
         }
 
-        // 3. Lấy thông tin cấu hình block
+        
         String mmoId = getMMOIdFromInteraction(interaction);
         if (mmoId == null) return;
 
@@ -115,14 +115,14 @@ public class MiningListener implements Listener {
         ConfigurationSection blockSec = config.getConfigurationSection(mmoId);
         if (blockSec == null) return;
 
-        // 4. Kiểm tra điều kiện (Conditions)
+        
         if (!checkConditions(player, config, mmoId)) return;
 
-        // 5. Kiểm tra Cooldown - SỬA LỖI: Tránh chặn click quá gắt
+        
         double cooldownTime = blockSec.getDouble("click_cooldown", 0.35);
         if (isInCooldown(player.getUniqueId(), cooldownTime)) return;
 
-        // 6. Kiểm tra công cụ (Tool check)
+        
         ConfigurationSection toolConfig = null;
         ItemStack hand = player.getInventory().getItemInMainHand();
 
@@ -142,7 +142,7 @@ public class MiningListener implements Listener {
             }
         }
 
-        // Nếu không cầm đúng tool, gửi feedback rồi thoát
+        
         if (toolConfig == null) {
             String failTitle = blockSec.getString("send-title");
             String failSub = blockSec.getString("send-subtitle");
@@ -150,35 +150,35 @@ public class MiningListener implements Listener {
             return;
         }
 
-        // 7. Xử lý độ bền
+        
         if (this.toolManager != null) {
             toolManager.handleDurability(player, toolConfig, actionType);
         } else {
-            // Cập nhật lại item cho player để Client không bị "đơ" sau khi trừ độ bền
+            
             handleVanillaDurabilityFallback(player, toolConfig, actionType);
         }
 
-        // 8. Tính toán sát thương
+        
         int damage = toolConfig.contains("both_click")
                 ? toolConfig.getInt("both_click.clickNeeded", 1)
                 : toolConfig.getInt(actionType + ".clickNeeded", 1);
 
-        // Phát âm thanh khi click
+        
         String clickSound = blockSec.getString("sounds.onClick");
         if (clickSound != null && !clickSound.isEmpty()) {
             player.playSound(loc, clickSound, 1.0f, 1.0f);
         }
 
-        // 9. LOGIC TIẾN TRÌNH (PROGRESS)
+        
         int maxHealth = blockSec.getInt("health-block", 3);
         int currentProgress = blockProgress.getOrDefault(loc, 0);
         int newProgress = currentProgress + damage;
 
-        // Hủy bỏ task refund cũ ngay khi nhận click mới để tránh reset progress
+        
         cancelRefundTask(loc);
 
         if (newProgress >= maxHealth) {
-            // Xử lý khi block vỡ
+            
             blockProgress.remove(loc);
             plugin.getHoloManager().removeHolo(loc);
 
@@ -192,7 +192,7 @@ public class MiningListener implements Listener {
 
             startRespawnLogic(loc, mmoId, config, interaction);
         } else {
-            // Cập nhật progress mới
+            
             blockProgress.put(loc, newProgress);
             String progressStr = newProgress + "/" + maxHealth;
             String barStr = plugin.getHoloProvider().createBar(newProgress, maxHealth);
@@ -200,7 +200,7 @@ public class MiningListener implements Listener {
             sendFeedback(player, null, null, progressStr, barStr, blockSec.getBoolean("action_bar", true));
             updateProgressHolo(loc, mmoId, config, progressStr, barStr);
 
-            // Chạy lại timer refund (reset máu nếu người chơi ngừng đào)[cite: 2]
+            
             startRefundTimer(loc, mmoId, config);
         }
     }
@@ -216,7 +216,7 @@ public class MiningListener implements Listener {
             meta.setDamage(meta.getDamage() + amount);
             hand.setItemMeta(meta);
 
-            // QUAN TRỌNG: Ghi đè lại item để Client thấy độ bền thay đổi và không bị kẹt animation[cite: 2]
+            
             player.getInventory().setItemInMainHand(hand);
 
             if (meta.getDamage() >= hand.getType().getMaxDurability()) {
@@ -225,7 +225,7 @@ public class MiningListener implements Listener {
             }
         }
     }
-    // Hàm phụ để lấy ID từ Tag của Interaction
+    
     private String getMMOIdFromInteraction(Interaction interaction) {
         return interaction.getScoreboardTags().stream()
                 .filter(tag -> tag.startsWith("MMO_ID_"))
@@ -234,7 +234,7 @@ public class MiningListener implements Listener {
                 .orElse(null);
     }
 
-    // Hàm phụ để hủy task refund khi người chơi click liên tục
+    
     private void cancelRefundTask(Location loc) {
         if (refundTasks.containsKey(loc)) {
             refundTasks.get(loc).cancel();
@@ -242,7 +242,7 @@ public class MiningListener implements Listener {
         }
     }
 
-    // Hàm phụ xử lý việc Admin xóa block vĩnh viễn (Shift + Click)
+    
     private void removeBlockPermanently(Player player, Location loc, Interaction interaction) {
         String world = loc.getWorld().getName();
         int x = loc.getBlockX();
@@ -260,9 +260,7 @@ public class MiningListener implements Listener {
         plugin.getDatabase().removePlacedBlock(world, x, y, z);
         player.sendMessage("§c[MMOBlock] Đã xóa vĩnh viễn block và dữ liệu.");
     }
-    /**
-     * Hàm kiểm tra tất cả các điều kiện dựa trên PlaceholderAPI
-     */
+    
     private boolean checkConditions(Player player, FileConfiguration config, String mmoId) {
         ConfigurationSection conditions = config.getConfigurationSection(mmoId + ".conditions");
         if (conditions == null) return true;
@@ -271,7 +269,7 @@ public class MiningListener implements Listener {
             ConfigurationSection section = conditions.getConfigurationSection(key);
             if (section == null) continue;
 
-            // Hook PAPI để lấy giá trị thực tế
+            
             String first = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, section.getString("first", ""));
             String second = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, section.getString("second", ""));
             String operator = section.getString("operator", "==");
@@ -286,9 +284,7 @@ public class MiningListener implements Listener {
         return true;
     }
 
-    /**
-     * Hàm so sánh giá trị linh hoạt cho Condition
-     */
+    
     private boolean evaluate(String v1, String v2, String op) {
         try {
             double d1 = Double.parseDouble(v1);
@@ -302,21 +298,21 @@ public class MiningListener implements Listener {
                 default -> d1 == d2;
             };
         } catch (NumberFormatException e) {
-            // So sánh chuỗi nếu không phải là số
+            
             return op.equals("!=") ? !v1.equalsIgnoreCase(v2) : v1.equalsIgnoreCase(v2);
         }
     }
 
     private void startRespawnLogic(Location baseLoc, String mmoId, FileConfiguration config, Interaction interaction) {
-        // 1. CHUẨN BỊ TỌA ĐỘ VÀ THÔNG TIN CƠ BẢN
+        
         Location loc = baseLoc.getBlock().getLocation();
         String worldName = loc.getWorld().getName();
         int x = loc.getBlockX(), y = loc.getBlockY(), z = loc.getBlockZ();
 
-        // Lấy thông tin Group từ Database
+        
         String groupId = plugin.getDatabase().getGroupIdAt(worldName, x, y, z);
 
-        // --- BƯỚC 1: DỌN DẸP SẠCH SẼ QUẶNG CŨ ---
+        
         plugin.getHoloManager().removeHolo(loc);
         interaction.setResponsive(false);
         interaction.addScoreboardTag("MMOBlock_Respawning");
@@ -338,7 +334,7 @@ public class MiningListener implements Listener {
             }
         }
 
-        // --- BƯỚC 2: TÍNH TOÁN THỜI GIAN HỒI SINH (TIMESTAMP) ---
+        
         int totalDelaySeconds = 0;
         if (groupId != null) {
             totalDelaySeconds = plugin.getGroupManager().getGroupDelay(groupId);
@@ -351,7 +347,7 @@ public class MiningListener implements Listener {
         long respawnAt = System.currentTimeMillis() + (totalDelaySeconds * 1000L);
         plugin.getDatabase().updateRespawnTime(worldName, x, y, z, respawnAt);
 
-        // --- BƯỚC 4: HIỂN THỊ HOLOGRAM ĐẾM NGƯỢC VÀ HỒI SINH TẠI CHỖ ---
+        
         if (groupId == null && totalDelaySeconds > 0) {
             ConfigurationSection deathSection = config.getConfigurationSection(mmoId + ".hologram.deathHolo");
             if (deathSection != null) {
@@ -360,26 +356,26 @@ public class MiningListener implements Listener {
                 new org.bukkit.scheduler.BukkitRunnable() {
                     @Override
                     public void run() {
-                        // 1. Nếu chunk bị unload, dừng task (Global Task sẽ lo phần còn lại khi chunk load)
+                        
                         if (!loc.getChunk().isLoaded()) {
                             plugin.getHoloManager().removeHolo(loc);
                             this.cancel();
                             return;
                         }
 
-                        // 2. Khi đếm ngược kết thúc
+                        
                         if (timeLeft[0] <= 0) {
-                            // Gọi hồi sinh ngay lập tức
+                            
                             handleInstantRespawn(loc, mmoId, config, interaction, null);
 
-                            // QUAN TRỌNG: Reset thời gian trong DB về 0 để Global Task không hồi sinh đè lên lần nữa
+                            
                             plugin.getDatabase().updateRespawnTime(worldName, x, y, z, 0);
 
                             this.cancel();
                             return;
                         }
 
-                        // 3. Hiển thị text đếm ngược
+                        
                         plugin.getHoloManager().spawnHolo(loc, deathSection, null, null, String.valueOf(timeLeft[0]));
 
                         timeLeft[0]--;
@@ -392,15 +388,15 @@ public class MiningListener implements Listener {
         String worldName = loc.getWorld().getName();
         int x = loc.getBlockX(), y = loc.getBlockY(), z = loc.getBlockZ();
 
-        // Lấy config của ID mới (nextId)
+        
         org.bukkit.configuration.file.FileConfiguration nextConfig = plugin.getConfigManager().getConfig(nextId);
         if (nextConfig == null) nextConfig = config;
 
-        // 1. Hồi phục Block vật lý theo cấu hình quặng mới (nextId)
-        // 1. Hồi phục Block vật lý theo cấu hình quặng mới (nextId)
+        
+        
         ConfigurationSection nextBS = nextConfig.getConfigurationSection(nextId + ".block-settings");
 
-// Mặc định là BARRIER để đảm bảo luôn có vật cản vật lý
+
         Material matToPlace = Material.BARRIER;
 
         if (nextBS != null && nextBS.getBoolean("enabled", true)) {
@@ -411,15 +407,15 @@ public class MiningListener implements Listener {
             }
         }
 
-// Luôn thực hiện đặt block, không để trong IF
+
         loc.getBlock().setType(matToPlace);
-        // 2. Hồi phục Structure mới (nextId)
+        
         java.util.List<String> nextStructs = nextConfig.getStringList(nextId + ".struct-ids");
         for (String sid : nextStructs) {
             if (!sid.isEmpty()) handleStructureBlocks(sid, false);
         }
 
-        // 3. Cập nhật Hitbox & Offset theo quặng mới (nextId)
+        
         org.bukkit.configuration.ConfigurationSection nextHB = nextConfig.getConfigurationSection(nextId + ".hitbox");
         double offX = 0, offY = 0, offZ = 0;
         if (nextHB != null) {
@@ -431,14 +427,14 @@ public class MiningListener implements Listener {
             interaction.teleport(loc.clone().add(0.5 + offX, 0.0 + offY, 0.5 + offZ));
         }
 
-        // 4. Spawn Model mới (ItemsAdder) & Cập nhật Database
+        
         java.util.UUID newAsUUID = null;
         boolean modelEnabled = nextConfig.getBoolean(nextId + ".block-itemsadder.enabled", false);
         if (modelEnabled) {
             newAsUUID = spawnModelAgain(loc, nextId, nextConfig);
         }
 
-        // Lưu thông tin quặng mới vào Database (Ghi đè ID cũ bằng nextId và giữ nguyên groupId)
+        
         plugin.getDatabase().savePlacedBlock(
                 worldName, x, y, z,
                 nextId, groupId,
@@ -446,18 +442,18 @@ public class MiningListener implements Listener {
                 offX, offY, offZ
         );
 
-        // 5. Cập nhật Tag nhận diện quặng mới trên Hitbox (Dùng cho lần đào sau)
+        
         interaction.getScoreboardTags().removeIf(tag -> tag.startsWith("MMO_ID_"));
         interaction.addScoreboardTag("MMO_ID_" + nextId);
 
-        // 6. Hiển thị Hologram mặc định của quặng mới (customHolo)
+        
         plugin.getHoloManager().removeHolo(loc);
         org.bukkit.configuration.ConfigurationSection custom = nextConfig.getConfigurationSection(nextId + ".hologram.customHolo");
         if (custom != null) {
             plugin.getHoloManager().spawnHolo(loc, custom, null, null, null);
         }
 
-        // Mở khóa hitbox cho phép người chơi đào quặng mới
+        
         interaction.setResponsive(true);
         interaction.getScoreboardTags().remove("MMOBlock_Respawning");
     }
@@ -494,7 +490,7 @@ public class MiningListener implements Listener {
         int refundTime = config.getInt(mmoId + ".time-refund", 0);
         if (refundTime <= 0) return;
 
-        // Debug (không dùng player nữa)
+        
 
 
         BukkitTask task = new BukkitRunnable() {
@@ -516,16 +512,16 @@ public class MiningListener implements Listener {
     }
 
     private void sendFeedback(Player player, String title, String sub, String progress, String bar, boolean isActionBar) {
-        // 1. Chỉ gửi Title/Subtitle nếu chúng thực sự có nội dung (không null)
+        
         if (title != null || sub != null) {
             String finalTitle = plugin.getHoloManager().formatLegacy(title != null ? title : "", progress, bar, null);
             String finalSub = plugin.getHoloManager().formatLegacy(sub != null ? sub : "", progress, bar, null);
             player.sendTitle(finalTitle, finalSub, 0, 20, 5);
         }
 
-        // 2. Gửi Action Bar cho tiến trình đào
+        
         if (isActionBar && progress != null) {
-            // Tùy biến format Action Bar hiển thị progress và thanh bar
+            
             String actionBarMsg = plugin.getHoloManager().formatLegacy("&eTiến trình: %progress% &7[%progress_bar%&7]", progress, bar, null);
             player.sendActionBar(actionBarMsg);
         }
@@ -539,9 +535,9 @@ public class MiningListener implements Listener {
     private boolean isInCooldown(UUID uuid, double seconds) {
         long now = System.currentTimeMillis();
         if (cooldowns.containsKey(uuid) && now < cooldowns.get(uuid)) {
-            return true; // Vẫn đang trong thời gian chờ
+            return true; 
         }
-        // Chỉ cập nhật cooldown MỚI khi đã hết cooldown cũ
+        
         cooldowns.put(uuid, now + (long) (seconds * 1000));
         return false;
     }
